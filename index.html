@@ -221,7 +221,7 @@
 
     .active-email-text {
       font-family: 'JetBrains Mono', monospace;
-      font-size: 0.98rem;
+      font-size: 0.96rem;
       font-weight: 600;
       color: var(--primary-light);
       overflow: hidden;
@@ -658,15 +658,14 @@
   <div class="toast" id="toast">Berhasil disalin!</div>
 
   <script>
-    const STORAGE_KEY = 'takaaa_github_inbox_v4';
+    const STORAGE_KEY = 'takaaa_mobile_inbox_v5';
 
-    // Jalur Direct + CORS Proxy otomatis untuk GitHub Pages
+    // Jalur Guerrilla Mail (100% GET request) + Multi-Proxy anti-blokir ISP seluler
     const PROVIDERS = [
-      { id: 'tempmail_proxy', name: 'Server 1 (Proxy)', type: 'tempmail', base: 'https://api.tempmail.lol', proxy: true },
-      { id: 'mailtm_proxy', name: 'Server 2 (Proxy)', type: 'hydra', base: 'https://api.mail.tm', proxy: true },
-      { id: 'mailgw_proxy', name: 'Server 3 (Proxy)', type: 'hydra', base: 'https://api.mail.gw', proxy: true },
-      { id: 'tempmail_direct', name: 'Server 1 (Direct)', type: 'tempmail', base: 'https://api.tempmail.lol', proxy: false },
-      { id: 'mailtm_direct', name: 'Server 2 (Direct)', type: 'hydra', base: 'https://api.mail.tm', proxy: false }
+      { id: 'gm_direct', name: 'Server 1 (Direct)', type: 'guerrilla', proxy: 'direct' },
+      { id: 'gm_allorigins', name: 'Server 2 (Proxy A)', type: 'guerrilla', proxy: 'allorigins' },
+      { id: 'gm_codetabs', name: 'Server 3 (Proxy B)', type: 'guerrilla', proxy: 'codetabs' },
+      { id: 'mailtm_direct', name: 'Server 4 (Mail.tm)', type: 'hydra', base: 'https://api.mail.tm' }
     ];
 
     const activeEmailEl = document.getElementById('activeEmail');
@@ -700,17 +699,33 @@
     let cachedBodies = {};
     let pollTimer = null;
 
-    function buildUrl(config, path) {
-      const fullTarget = config.base + path;
-      return config.proxy
-        ? 'https://corsproxy.io/?' + encodeURIComponent(fullTarget)
-        : fullTarget;
-    }
-
     function showToast(msg) {
       toast.textContent = msg;
       toast.classList.add('show');
       setTimeout(() => toast.classList.remove('show'), 2200);
+    }
+
+    // Fetch dengan batas waktu 6 detik agar tidak menggantung jika diblokir operator seluler
+    async function fetchWithTimeout(url, options = {}, timeoutMs = 6000) {
+      const controller = new AbortController();
+      const timer = setTimeout(() => controller.abort(), timeoutMs);
+      try {
+        const res = await fetch(url, { ...options, signal: controller.signal });
+        return res;
+      } finally {
+        clearTimeout(timer);
+      }
+    }
+
+    function wrapGuerrillaUrl(queryParams, proxyMode) {
+      const targetUrl = `https://api.guerrillamail.com/ajax.php?${queryParams}&_cb=${Date.now()}`;
+      if (proxyMode === 'allorigins') {
+        return `https://api.allorigins.win/raw?url=${encodeURIComponent(targetUrl)}`;
+      }
+      if (proxyMode === 'codetabs') {
+        return `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(targetUrl)}`;
+      }
+      return targetUrl;
     }
 
     function randomString(len) {
@@ -723,27 +738,25 @@
     }
 
     async function createOnProvider(provider) {
-      if (provider.type === 'tempmail') {
-        const res = await fetch(buildUrl(provider, '/v2/inbox/create'), {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({})
-        });
+      if (provider.type === 'guerrilla') {
+        const url = wrapGuerrillaUrl('f=get_email_address&lang=en', provider.proxy);
+        const res = await fetchWithTimeout(url, {}, 6500);
         if (!res.ok) throw new Error(`${provider.name} HTTP ${res.status}`);
         const data = await res.json();
-        if (!data.address || !data.token) throw new Error(`${provider.name} respons kosong`);
+        if (!data.email_addr || !data.sid_token) {
+          throw new Error(`${provider.name} data kosong`);
+        }
         return {
-          type: 'tempmail',
-          base: provider.base,
+          type: 'guerrilla',
           proxy: provider.proxy,
           serverName: provider.name,
-          address: data.address,
-          token: data.token
+          address: data.email_addr,
+          token: data.sid_token
         };
       }
 
-      // Tipe Hydra (Mail.tm / Mail.gw)
-      const domainRes = await fetch(buildUrl(provider, '/domains'), { cache: 'no-store' });
+      // Cadangan Mail.tm
+      const domainRes = await fetchWithTimeout(`${provider.base}/domains`, { cache: 'no-store' }, 5000);
       if (!domainRes.ok) throw new Error(`${provider.name} HTTP ${domainRes.status}`);
       const domainData = await domainRes.json();
       const domains = domainData['hydra:member'] || [];
@@ -753,25 +766,24 @@
       const address = `takaaa.${randomString(6)}@${activeDomain.domain}`;
       const password = `Takaaa#${randomString(10)}`;
 
-      const accRes = await fetch(buildUrl(provider, '/accounts'), {
+      const accRes = await fetchWithTimeout(`${provider.base}/accounts`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ address, password })
-      });
+      }, 5000);
       if (!accRes.ok) throw new Error(`${provider.name} HTTP ${accRes.status}`);
 
-      const tokenRes = await fetch(buildUrl(provider, '/token'), {
+      const tokenRes = await fetchWithTimeout(`${provider.base}/token`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ address, password })
-      });
+      }, 5000);
       if (!tokenRes.ok) throw new Error(`${provider.name} token gagal`);
       const tokenData = await tokenRes.json();
 
       return {
         type: 'hydra',
         base: provider.base,
-        proxy: provider.proxy,
         serverName: provider.name,
         address,
         token: tokenData.token
@@ -805,7 +817,8 @@
           newEmailBtn.disabled = false;
           return;
         } catch (err) {
-          errors.push(err.message);
+          const reason = err.name === 'AbortError' ? `${provider.name} Timeout` : err.message;
+          errors.push(reason);
         }
       }
 
@@ -815,7 +828,7 @@
       errorDetailEl.style.display = 'block';
       errorDetailEl.innerHTML = `
         <strong>Log Koneksi:</strong> ${errors.join(' | ')}.<br>
-        Jika jaringan Wi-Fi/operator Anda memblokir seluruh proxy, aktifkan <strong>Private DNS (dns.google)</strong> di pengaturan HP atau gunakan 1.1.1.1 WARP.
+        Operator seluler Anda memblokir seluruh jalur API. Aktifkan <strong>DNS Pribadi (dns.google)</strong> di Pengaturan HP lalu tekan <strong>Buat Email Baru</strong>.
       `;
       newEmailBtn.disabled = false;
     }
@@ -844,25 +857,48 @@
     }
 
     async function fetchMessagesList() {
-      if (currentAccount.type === 'tempmail') {
-        const path = `/v2/inbox?token=${encodeURIComponent(currentAccount.token)}`;
-        const res = await fetch(buildUrl(currentAccount, path), { cache: 'no-store' });
-        if (!res.ok) throw new Error('Inbox expired');
+      if (currentAccount.type === 'guerrilla') {
+        const listUrl = wrapGuerrillaUrl(
+          `f=check_email&seq=0&sid_token=${encodeURIComponent(currentAccount.token)}`,
+          currentAccount.proxy
+        );
+        const res = await fetchWithTimeout(listUrl, {}, 7000);
+        if (!res.ok) throw new Error('Gagal cek inbox');
         const data = await res.json();
-        const emails = data.emails || [];
-        return emails.map((m) => ({
-          sender: m.from || 'Pengirim',
-          subject: m.subject || '(Tanpa Subjek)',
-          date: m.date || Date.now(),
-          body: m.body || stripHtml(m.html || '') || '(Tanpa isi teks)'
-        }));
+        const rawList = (data.list || []).filter(
+          (m) => !(String(m.mail_id) === '1' && String(m.mail_from || '').includes('guerrillamail.com'))
+        );
+
+        const normalized = [];
+        for (const msg of rawList) {
+          let fullText = cachedBodies[msg.mail_id];
+          if (!fullText) {
+            const fetchUrl = wrapGuerrillaUrl(
+              `f=fetch_email&email_id=${encodeURIComponent(msg.mail_id)}&sid_token=${encodeURIComponent(currentAccount.token)}`,
+              currentAccount.proxy
+            );
+            const detailRes = await fetchWithTimeout(fetchUrl, {}, 7000);
+            const detailData = await detailRes.json();
+            fullText = stripHtml(detailData.mail_body || msg.mail_excerpt || '(Tanpa isi teks)');
+            cachedBodies[msg.mail_id] = fullText;
+          }
+
+          const ts = Number(msg.mail_timestamp) * 1000 || Date.now();
+          normalized.push({
+            sender: msg.mail_from || 'Pengirim',
+            subject: msg.mail_subject || '(Tanpa Subjek)',
+            date: ts,
+            body: fullText
+          });
+        }
+        return normalized;
       }
 
-      // Tipe Hydra
-      const res = await fetch(buildUrl(currentAccount, '/messages'), {
+      // Tipe Hydra (Mail.tm)
+      const res = await fetchWithTimeout(`${currentAccount.base}/messages`, {
         headers: { Authorization: `Bearer ${currentAccount.token}` },
         cache: 'no-store'
-      });
+      }, 6000);
       if (res.status === 401) throw new Error('Token expired');
       const data = await res.json();
       const rawList = data['hydra:member'] || [];
@@ -871,10 +907,10 @@
       for (const msg of rawList) {
         let fullText = cachedBodies[msg.id];
         if (!fullText) {
-          const detailRes = await fetch(buildUrl(currentAccount, `/messages/${msg.id}`), {
+          const detailRes = await fetchWithTimeout(`${currentAccount.base}/messages/${msg.id}`, {
             headers: { Authorization: `Bearer ${currentAccount.token}` },
             cache: 'no-store'
-          });
+          }, 6000);
           const detailData = await detailRes.json();
           const htmlContent = Array.isArray(detailData.html) ? detailData.html.join(' ') : (detailData.html || '');
           fullText = detailData.text || stripHtml(htmlContent) || msg.intro || '(Tanpa isi teks)';
@@ -960,8 +996,7 @@
 
         pollStatusEl.textContent = `Terakhir dicek: ${new Date().toLocaleTimeString('id-ID')}`;
       } catch (err) {
-        pollStatusEl.textContent = 'Sesi inbox habis, membuat ulang...';
-        await createNewAccount();
+        pollStatusEl.textContent = 'Mencoba menghubungkan ulang inbox...';
       }
     }
 
@@ -985,7 +1020,7 @@
       if (saved) {
         try {
           currentAccount = JSON.parse(saved);
-          if (currentAccount?.address && currentAccount?.token && currentAccount?.base) {
+          if (currentAccount?.address && currentAccount?.token) {
             activeEmailEl.textContent = currentAccount.address;
             apiStatusText.textContent = `Aktif • ${currentAccount.serverName || 'Inbox Siap'}`;
             startPolling();
