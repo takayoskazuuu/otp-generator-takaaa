@@ -1,0 +1,1000 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Virtual Email & Live OTP Receiver — TAKAAA</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      --bg-body: #060913;
+      --bg-card: rgba(15, 23, 42, 0.78);
+      --bg-input: rgba(30, 41, 59, 0.85);
+      --border: rgba(148, 163, 184, 0.15);
+      --border-hover: rgba(16, 185, 129, 0.45);
+      --primary: #10b981;
+      --primary-light: #34d399;
+      --secondary: #3b82f6;
+      --danger: #f87171;
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background-color: var(--bg-body);
+      color: var(--text-main);
+      line-height: 1.6;
+      padding: 20px 16px 48px;
+      min-height: 100vh;
+      position: relative;
+      overflow-x: hidden;
+    }
+
+    body::before,
+    body::after {
+      content: '';
+      position: fixed;
+      width: 380px;
+      height: 380px;
+      border-radius: 50%;
+      filter: blur(130px);
+      z-index: -1;
+      pointer-events: none;
+      opacity: 0.45;
+    }
+
+    body::before {
+      top: -120px;
+      left: -100px;
+      background: radial-gradient(circle, rgba(16, 185, 129, 0.38), transparent 70%);
+    }
+
+    body::after {
+      bottom: -140px;
+      right: -100px;
+      background: radial-gradient(circle, rgba(59, 130, 246, 0.32), transparent 70%);
+    }
+
+    .container {
+      max-width: 820px;
+      margin: 0 auto;
+    }
+
+    .top-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-bottom: 24px;
+      padding: 10px 14px;
+      background: rgba(15, 23, 42, 0.65);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+    }
+
+    .top-left {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .brand-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.78rem;
+      font-weight: 800;
+      letter-spacing: 0.08em;
+      padding: 5px 12px;
+      border-radius: 999px;
+      background: linear-gradient(135deg, rgba(16, 185, 129, 0.2), rgba(59, 130, 246, 0.2));
+      border: 1px solid rgba(52, 211, 153, 0.35);
+      color: var(--primary-light);
+      text-transform: uppercase;
+    }
+
+    .live-status {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      font-size: 0.76rem;
+      font-weight: 600;
+      padding: 5px 11px;
+      border-radius: 999px;
+      background-color: rgba(16, 185, 129, 0.1);
+      color: var(--primary-light);
+      border: 1px solid rgba(16, 185, 129, 0.25);
+    }
+
+    .live-status.error {
+      background-color: rgba(248, 113, 113, 0.12);
+      color: var(--danger);
+      border-color: rgba(248, 113, 113, 0.35);
+    }
+
+    .dot-pulse {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background-color: currentColor;
+      animation: pulse 1.6s infinite;
+    }
+
+    @keyframes pulse {
+      0% { box-shadow: 0 0 0 0 rgba(52, 211, 153, 0.7); }
+      70% { box-shadow: 0 0 0 7px rgba(52, 211, 153, 0); }
+      100% { box-shadow: 0 0 0 0 rgba(52, 211, 153, 0); }
+    }
+
+    .btn-donate-top {
+      background: linear-gradient(135deg, rgba(244, 63, 94, 0.2), rgba(251, 113, 133, 0.14));
+      color: #fda4af;
+      border: 1px solid rgba(244, 63, 94, 0.4);
+      padding: 6px 14px;
+      font-size: 0.78rem;
+      border-radius: 999px;
+    }
+
+    .btn-donate-top:hover {
+      background: linear-gradient(135deg, #f43f5e, #e11d48);
+      color: #ffffff;
+      border-color: transparent;
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 24px;
+    }
+
+    .creator-tag {
+      display: inline-block;
+      font-size: 0.75rem;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      margin-bottom: 8px;
+    }
+
+    .creator-tag span {
+      color: var(--primary-light);
+    }
+
+    header h1 {
+      font-size: 1.95rem;
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      line-height: 1.2;
+      margin-bottom: 8px;
+    }
+
+    header h1 .gradient-text {
+      background: linear-gradient(135deg, #34d399 0%, #10b981 45%, #38bdf8 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    header p {
+      color: var(--text-muted);
+      font-size: 0.93rem;
+      max-width: 580px;
+      margin: 0 auto;
+    }
+
+    .card {
+      background: var(--bg-card);
+      backdrop-filter: blur(18px);
+      -webkit-backdrop-filter: blur(18px);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 24px;
+      box-shadow: 0 20px 45px rgba(0, 0, 0, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.06);
+      margin-bottom: 20px;
+    }
+
+    .email-display-box {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      background-color: var(--bg-input);
+      border: 1px solid rgba(52, 211, 153, 0.35);
+      border-radius: 14px;
+      padding: 14px 16px;
+      margin-bottom: 12px;
+    }
+
+    .active-email-text {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.98rem;
+      font-weight: 600;
+      color: var(--primary-light);
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .error-detail {
+      display: none;
+      font-size: 0.8rem;
+      color: #fca5a5;
+      background: rgba(239, 68, 68, 0.12);
+      border: 1px solid rgba(239, 68, 68, 0.3);
+      border-radius: 10px;
+      padding: 10px 12px;
+      margin-bottom: 14px;
+    }
+
+    .btn-group {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    button, .btn-link {
+      padding: 12px 18px;
+      border: none;
+      border-radius: 12px;
+      font-family: inherit;
+      font-size: 0.9rem;
+      font-weight: 700;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      text-decoration: none;
+      transition: all 0.2s ease;
+    }
+
+    button:active {
+      transform: scale(0.98);
+    }
+
+    button:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+      color: #032615;
+      flex: 1;
+      min-width: 180px;
+      box-shadow: 0 8px 22px rgba(16, 185, 129, 0.28);
+    }
+
+    .btn-primary:hover:not(:disabled) {
+      background: linear-gradient(135deg, #34d399 0%, #10b981 100%);
+    }
+
+    .btn-secondary {
+      background: rgba(59, 130, 246, 0.16);
+      color: #93c5fd;
+      border: 1px solid rgba(59, 130, 246, 0.38);
+    }
+
+    .btn-secondary:hover:not(:disabled) {
+      background: var(--secondary);
+      color: #ffffff;
+    }
+
+    .btn-copy-main {
+      padding: 8px 14px;
+      font-size: 0.82rem;
+      background-color: var(--primary);
+      color: #032615;
+      border-radius: 9px;
+      flex-shrink: 0;
+    }
+
+    .inbox-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 10px;
+      padding-bottom: 14px;
+      margin-bottom: 16px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .badge-count {
+      background-color: rgba(16, 185, 129, 0.15);
+      color: var(--primary-light);
+      border: 1px solid rgba(16, 185, 129, 0.3);
+      padding: 3px 11px;
+      border-radius: 999px;
+      font-size: 0.8rem;
+      font-weight: 700;
+      margin-left: 6px;
+    }
+
+    .timer-text {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+    }
+
+    .message-list {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .empty-inbox {
+      text-align: center;
+      padding: 36px 16px;
+      color: var(--text-muted);
+      font-size: 0.92rem;
+      background: rgba(30, 41, 59, 0.35);
+      border: 1px dashed var(--border);
+      border-radius: 14px;
+    }
+
+    .msg-card {
+      background: rgba(30, 41, 59, 0.65);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 16px;
+    }
+
+    .msg-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 10px;
+      margin-bottom: 8px;
+    }
+
+    .msg-sender {
+      font-size: 0.82rem;
+      font-weight: 700;
+      color: #93c5fd;
+    }
+
+    .msg-time {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+    }
+
+    .msg-subject {
+      font-size: 0.96rem;
+      font-weight: 700;
+      margin-bottom: 8px;
+      color: var(--text-main);
+    }
+
+    .otp-highlight {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      background: rgba(16, 185, 129, 0.14);
+      border: 1px solid rgba(16, 185, 129, 0.45);
+      border-radius: 10px;
+      padding: 10px 14px;
+      margin-bottom: 10px;
+    }
+
+    .otp-code {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 1.25rem;
+      font-weight: 800;
+      letter-spacing: 0.14em;
+      color: var(--primary-light);
+    }
+
+    .msg-body {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      background: rgba(15, 23, 42, 0.55);
+      padding: 10px 12px;
+      border-radius: 9px;
+      white-space: pre-wrap;
+      word-break: break-word;
+      max-height: 150px;
+      overflow-y: auto;
+    }
+
+    footer {
+      text-align: center;
+      margin-top: 28px;
+      padding-top: 18px;
+      border-top: 1px solid var(--border);
+      color: var(--text-muted);
+      font-size: 0.84rem;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+    }
+
+    footer strong {
+      color: var(--text-main);
+    }
+
+    .btn-donate-footer {
+      background: rgba(244, 63, 94, 0.14);
+      color: #fda4af;
+      border: 1px solid rgba(244, 63, 94, 0.35);
+      padding: 8px 18px;
+      font-size: 0.82rem;
+      border-radius: 999px;
+    }
+
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(2, 6, 23, 0.82);
+      backdrop-filter: blur(10px);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+      z-index: 1000;
+    }
+
+    .modal-overlay.open {
+      display: flex;
+    }
+
+    .modal-box {
+      background: #0f172a;
+      border: 1px solid rgba(148, 163, 184, 0.2);
+      border-radius: 22px;
+      max-width: 400px;
+      width: 100%;
+      padding: 22px;
+      text-align: center;
+      position: relative;
+    }
+
+    .modal-close {
+      position: absolute;
+      top: 14px;
+      right: 14px;
+      width: 34px;
+      height: 34px;
+      padding: 0;
+      border-radius: 50%;
+      background: rgba(30, 41, 59, 0.9);
+      color: var(--text-muted);
+    }
+
+    .modal-badge {
+      display: inline-block;
+      font-size: 0.72rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      padding: 4px 12px;
+      border-radius: 999px;
+      background: rgba(244, 63, 94, 0.16);
+      color: #fda4af;
+      margin-bottom: 8px;
+    }
+
+    .modal-box h2 {
+      font-size: 1.25rem;
+      margin-bottom: 4px;
+    }
+
+    .modal-box p {
+      font-size: 0.83rem;
+      color: var(--text-muted);
+      margin-bottom: 14px;
+    }
+
+    .qris-frame {
+      background: #ffffff;
+      border-radius: 16px;
+      padding: 8px;
+      margin: 0 auto 14px;
+      max-width: 280px;
+    }
+
+    .qris-frame img {
+      width: 100%;
+      height: auto;
+      display: block;
+      border-radius: 10px;
+    }
+
+    .nmid-box {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: rgba(30, 41, 59, 0.75);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 8px 12px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.76rem;
+      color: var(--text-muted);
+      margin-bottom: 14px;
+    }
+
+    .modal-actions {
+      display: flex;
+      gap: 8px;
+    }
+
+    .modal-actions a,
+    .modal-actions button {
+      flex: 1;
+      padding: 10px 14px;
+      font-size: 0.84rem;
+    }
+
+    .btn-outline {
+      background: rgba(30, 41, 59, 0.8);
+      border: 1px solid var(--border);
+      color: var(--text-main);
+    }
+
+    .toast {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      left: 24px;
+      max-width: 400px;
+      margin: 0 auto;
+      text-align: center;
+      background: linear-gradient(135deg, #10b981, #059669);
+      color: #032615;
+      padding: 12px 20px;
+      border-radius: 12px;
+      font-weight: 800;
+      font-size: 0.88rem;
+      transform: translateY(120px);
+      opacity: 0;
+      transition: all 0.3s ease;
+      z-index: 1100;
+    }
+
+    .toast.show {
+      transform: translateY(0);
+      opacity: 1;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <div class="top-bar">
+      <div class="top-left">
+        <span class="brand-chip">⚡ TAKAAA</span>
+        <div class="live-status" id="statusBadge">
+          <span class="dot-pulse"></span>
+          <span id="apiStatusText">Auto-OTP Standby</span>
+        </div>
+      </div>
+
+      <button type="button" class="btn-donate-top" id="openDonateTopBtn">♥ Donate</button>
+    </div>
+
+    <header>
+      <div class="creator-tag">Official OTP Tool by <span>TAKAAA</span></div>
+      <h1>Virtual Email & <span class="gradient-text">Live OTP</span> Receiver</h1>
+      <p>Buat alamat email aktif dalam 1 klik, gunakan untuk mendaftar, dan terima kode OTP langsung di layar ini.</p>
+    </header>
+
+    <div class="card">
+      <div class="email-display-box">
+        <span class="active-email-text" id="activeEmail">Menghubungkan ke server...</span>
+        <button type="button" class="btn-copy-main" id="copyEmailBtn">Salin Email</button>
+      </div>
+
+      <div class="error-detail" id="errorDetail"></div>
+
+      <div class="btn-group">
+        <button type="button" class="btn-primary" id="newEmailBtn">Buat Email Baru</button>
+        <button type="button" class="btn-secondary" id="refreshInboxBtn">Cek Inbox Sekarang</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="inbox-header">
+        <div>
+          <strong>Kotak Masuk & OTP</strong>
+          <span class="badge-count" id="msgCount">0 Pesan</span>
+        </div>
+        <span class="timer-text" id="pollStatus">Menunggu akun aktif...</span>
+      </div>
+
+      <div class="message-list" id="messageList">
+        <div class="empty-inbox">
+          Belum ada pesan masuk. Salin alamat email di atas untuk mendaftar di website tujuan, lalu tunggu beberapa detik hingga kode OTP muncul di sini.
+        </div>
+      </div>
+    </div>
+
+    <footer>
+      <div>Created with ♥ by <strong>TAKAAA</strong></div>
+      <button type="button" class="btn-donate-footer" id="openDonateFooterBtn">
+        ☕ Dukung & Donate via QRIS
+      </button>
+    </footer>
+  </div>
+
+  <!-- Modal Donate QRIS -->
+  <div class="modal-overlay" id="donateModal">
+    <div class="modal-box">
+      <button type="button" class="modal-close" id="closeDonateBtn">✕</button>
+      <div class="modal-badge">Support Developer</div>
+      <h2>Donate untuk TAKAAA</h2>
+      <p>Scan QRIS <strong>TAKAAA STORE</strong> via GoPay, DANA, OVO, ShopeePay, atau mobile banking.</p>
+
+      <div class="qris-frame">
+        <img src="qris.png" alt="QRIS TAKAAA STORE" />
+      </div>
+
+      <div class="nmid-box">
+        <span>NMID: ID1025427601535</span>
+        <button type="button" class="btn-copy-main" id="copyNmidBtn" style="padding: 4px 10px; font-size: 0.72rem;">Salin</button>
+      </div>
+
+      <div class="modal-actions">
+        <a href="qris.png" download="QRIS-TAKAAA-STORE.png" class="btn-link btn-primary">Simpan QRIS</a>
+        <button type="button" class="btn-outline" id="closeDonateBottomBtn">Tutup</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast">Berhasil disalin!</div>
+
+  <script>
+    const STORAGE_KEY = 'takaaa_github_inbox_v4';
+
+    // Jalur Direct + CORS Proxy otomatis untuk GitHub Pages
+    const PROVIDERS = [
+      { id: 'tempmail_proxy', name: 'Server 1 (Proxy)', type: 'tempmail', base: 'https://api.tempmail.lol', proxy: true },
+      { id: 'mailtm_proxy', name: 'Server 2 (Proxy)', type: 'hydra', base: 'https://api.mail.tm', proxy: true },
+      { id: 'mailgw_proxy', name: 'Server 3 (Proxy)', type: 'hydra', base: 'https://api.mail.gw', proxy: true },
+      { id: 'tempmail_direct', name: 'Server 1 (Direct)', type: 'tempmail', base: 'https://api.tempmail.lol', proxy: false },
+      { id: 'mailtm_direct', name: 'Server 2 (Direct)', type: 'hydra', base: 'https://api.mail.tm', proxy: false }
+    ];
+
+    const activeEmailEl = document.getElementById('activeEmail');
+    const errorDetailEl = document.getElementById('errorDetail');
+    const copyEmailBtn = document.getElementById('copyEmailBtn');
+    const newEmailBtn = document.getElementById('newEmailBtn');
+    const refreshInboxBtn = document.getElementById('refreshInboxBtn');
+    const messageListEl = document.getElementById('messageList');
+    const msgCountEl = document.getElementById('msgCount');
+    const pollStatusEl = document.getElementById('pollStatus');
+    const statusBadge = document.getElementById('statusBadge');
+    const apiStatusText = document.getElementById('apiStatusText');
+    const toast = document.getElementById('toast');
+
+    // Modal Donate
+    const donateModal = document.getElementById('donateModal');
+    document.getElementById('openDonateTopBtn').addEventListener('click', () => donateModal.classList.add('open'));
+    document.getElementById('openDonateFooterBtn').addEventListener('click', () => donateModal.classList.add('open'));
+    document.getElementById('closeDonateBtn').addEventListener('click', () => donateModal.classList.remove('open'));
+    document.getElementById('closeDonateBottomBtn').addEventListener('click', () => donateModal.classList.remove('open'));
+    donateModal.addEventListener('click', (e) => {
+      if (e.target === donateModal) donateModal.classList.remove('open');
+    });
+
+    document.getElementById('copyNmidBtn').addEventListener('click', () => {
+      navigator.clipboard.writeText('ID1025427601535');
+      showToast('NMID berhasil disalin!');
+    });
+
+    let currentAccount = null;
+    let cachedBodies = {};
+    let pollTimer = null;
+
+    function buildUrl(config, path) {
+      const fullTarget = config.base + path;
+      return config.proxy
+        ? 'https://corsproxy.io/?' + encodeURIComponent(fullTarget)
+        : fullTarget;
+    }
+
+    function showToast(msg) {
+      toast.textContent = msg;
+      toast.classList.add('show');
+      setTimeout(() => toast.classList.remove('show'), 2200);
+    }
+
+    function randomString(len) {
+      const chars = 'abcdefghijklmnopqrstuvwxyz0123456789';
+      let out = '';
+      for (let i = 0; i < len; i++) {
+        out += chars[Math.floor(Math.random() * chars.length)];
+      }
+      return out;
+    }
+
+    async function createOnProvider(provider) {
+      if (provider.type === 'tempmail') {
+        const res = await fetch(buildUrl(provider, '/v2/inbox/create'), {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({})
+        });
+        if (!res.ok) throw new Error(`${provider.name} HTTP ${res.status}`);
+        const data = await res.json();
+        if (!data.address || !data.token) throw new Error(`${provider.name} respons kosong`);
+        return {
+          type: 'tempmail',
+          base: provider.base,
+          proxy: provider.proxy,
+          serverName: provider.name,
+          address: data.address,
+          token: data.token
+        };
+      }
+
+      // Tipe Hydra (Mail.tm / Mail.gw)
+      const domainRes = await fetch(buildUrl(provider, '/domains'), { cache: 'no-store' });
+      if (!domainRes.ok) throw new Error(`${provider.name} HTTP ${domainRes.status}`);
+      const domainData = await domainRes.json();
+      const domains = domainData['hydra:member'] || [];
+      const activeDomain = domains.find((d) => d.isActive);
+      if (!activeDomain) throw new Error(`${provider.name} domain kosong`);
+
+      const address = `takaaa.${randomString(6)}@${activeDomain.domain}`;
+      const password = `Takaaa#${randomString(10)}`;
+
+      const accRes = await fetch(buildUrl(provider, '/accounts'), {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ address, password })
+      });
+      if (!accRes.ok) throw new Error(`${provider.name} HTTP ${accRes.status}`);
+
+      const tokenRes = await fetch(buildUrl(provider, '/token'), {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ address, password })
+      });
+      if (!tokenRes.ok) throw new Error(`${provider.name} token gagal`);
+      const tokenData = await tokenRes.json();
+
+      return {
+        type: 'hydra',
+        base: provider.base,
+        proxy: provider.proxy,
+        serverName: provider.name,
+        address,
+        token: tokenData.token
+      };
+    }
+
+    async function createNewAccount() {
+      newEmailBtn.disabled = true;
+      errorDetailEl.style.display = 'none';
+      statusBadge.classList.remove('error');
+      activeEmailEl.textContent = 'Menghubungkan ke server...';
+      apiStatusText.textContent = 'Menghubungkan...';
+      cachedBodies = {};
+
+      let errors = [];
+
+      for (const provider of PROVIDERS) {
+        try {
+          activeEmailEl.textContent = `Mencoba ${provider.name}...`;
+          const account = await createOnProvider(provider);
+
+          currentAccount = account;
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(currentAccount));
+
+          activeEmailEl.textContent = account.address;
+          apiStatusText.textContent = `Aktif • ${account.serverName}`;
+          showToast('Email aktif siap digunakan!');
+
+          renderEmptyInbox();
+          startPolling();
+          newEmailBtn.disabled = false;
+          return;
+        } catch (err) {
+          errors.push(err.message);
+        }
+      }
+
+      statusBadge.classList.add('error');
+      activeEmailEl.textContent = 'Gagal terhubung ke server';
+      apiStatusText.textContent = 'Gagal Terhubung';
+      errorDetailEl.style.display = 'block';
+      errorDetailEl.innerHTML = `
+        <strong>Log Koneksi:</strong> ${errors.join(' | ')}.<br>
+        Jika jaringan Wi-Fi/operator Anda memblokir seluruh proxy, aktifkan <strong>Private DNS (dns.google)</strong> di pengaturan HP atau gunakan 1.1.1.1 WARP.
+      `;
+      newEmailBtn.disabled = false;
+    }
+
+    function stripHtml(html) {
+      const tmp = document.createElement('div');
+      tmp.innerHTML = html;
+      return tmp.textContent || tmp.innerText || '';
+    }
+
+    function extractOtpCode(text) {
+      if (!text) return null;
+      const matches = text.match(/\b\d{4,8}\b/g);
+      if (!matches) return null;
+      const filtered = matches.filter((num) => !['2024', '2025', '2026', '2027'].includes(num));
+      return filtered.length > 0 ? filtered[0] : matches[0];
+    }
+
+    function renderEmptyInbox() {
+      msgCountEl.textContent = '0 Pesan';
+      messageListEl.innerHTML = `
+        <div class="empty-inbox">
+          Belum ada pesan masuk. Salin alamat email di atas untuk mendaftar di website tujuan, lalu tunggu beberapa detik hingga kode OTP muncul di sini.
+        </div>
+      `;
+    }
+
+    async function fetchMessagesList() {
+      if (currentAccount.type === 'tempmail') {
+        const path = `/v2/inbox?token=${encodeURIComponent(currentAccount.token)}`;
+        const res = await fetch(buildUrl(currentAccount, path), { cache: 'no-store' });
+        if (!res.ok) throw new Error('Inbox expired');
+        const data = await res.json();
+        const emails = data.emails || [];
+        return emails.map((m) => ({
+          sender: m.from || 'Pengirim',
+          subject: m.subject || '(Tanpa Subjek)',
+          date: m.date || Date.now(),
+          body: m.body || stripHtml(m.html || '') || '(Tanpa isi teks)'
+        }));
+      }
+
+      // Tipe Hydra
+      const res = await fetch(buildUrl(currentAccount, '/messages'), {
+        headers: { Authorization: `Bearer ${currentAccount.token}` },
+        cache: 'no-store'
+      });
+      if (res.status === 401) throw new Error('Token expired');
+      const data = await res.json();
+      const rawList = data['hydra:member'] || [];
+      const normalized = [];
+
+      for (const msg of rawList) {
+        let fullText = cachedBodies[msg.id];
+        if (!fullText) {
+          const detailRes = await fetch(buildUrl(currentAccount, `/messages/${msg.id}`), {
+            headers: { Authorization: `Bearer ${currentAccount.token}` },
+            cache: 'no-store'
+          });
+          const detailData = await detailRes.json();
+          const htmlContent = Array.isArray(detailData.html) ? detailData.html.join(' ') : (detailData.html || '');
+          fullText = detailData.text || stripHtml(htmlContent) || msg.intro || '(Tanpa isi teks)';
+          cachedBodies[msg.id] = fullText;
+        }
+        normalized.push({
+          sender: msg.from?.address || 'Pengirim',
+          subject: msg.subject || '(Tanpa Subjek)',
+          date: msg.createdAt,
+          body: fullText
+        });
+      }
+      return normalized;
+    }
+
+    async function checkInbox() {
+      if (!currentAccount || !currentAccount.token) return;
+      pollStatusEl.textContent = 'Memeriksa pesan masuk...';
+
+      try {
+        const messages = await fetchMessagesList();
+        msgCountEl.textContent = `${messages.length} Pesan`;
+
+        if (messages.length === 0) {
+          pollStatusEl.textContent = 'Menunggu OTP masuk (auto-cek 5 dtk)...';
+          return;
+        }
+
+        messageListEl.innerHTML = '';
+
+        for (const msg of messages) {
+          const otpCode = extractOtpCode(`${msg.subject} ${msg.body}`);
+          const card = document.createElement('div');
+          card.className = 'msg-card';
+
+          const top = document.createElement('div');
+          top.className = 'msg-top';
+
+          const sender = document.createElement('span');
+          sender.className = 'msg-sender';
+          sender.textContent = msg.sender;
+
+          const time = document.createElement('span');
+          time.className = 'msg-time';
+          time.textContent = new Date(msg.date).toLocaleTimeString('id-ID');
+
+          top.append(sender, time);
+
+          const subject = document.createElement('div');
+          subject.className = 'msg-subject';
+          subject.textContent = msg.subject;
+
+          card.append(top, subject);
+
+          if (otpCode) {
+            const otpBox = document.createElement('div');
+            otpBox.className = 'otp-highlight';
+
+            const codeSpan = document.createElement('span');
+            codeSpan.className = 'otp-code';
+            codeSpan.textContent = otpCode;
+
+            const copyOtpBtn = document.createElement('button');
+            copyOtpBtn.type = 'button';
+            copyOtpBtn.className = 'btn-copy-main';
+            copyOtpBtn.textContent = 'Salin OTP';
+            copyOtpBtn.addEventListener('click', () => {
+              navigator.clipboard.writeText(otpCode);
+              showToast(`Kode OTP ${otpCode} disalin!`);
+            });
+
+            otpBox.append(codeSpan, copyOtpBtn);
+            card.appendChild(otpBox);
+          }
+
+          const bodyEl = document.createElement('div');
+          bodyEl.className = 'msg-body';
+          bodyEl.textContent = msg.body.trim();
+
+          card.appendChild(bodyEl);
+          messageListEl.appendChild(card);
+        }
+
+        pollStatusEl.textContent = `Terakhir dicek: ${new Date().toLocaleTimeString('id-ID')}`;
+      } catch (err) {
+        pollStatusEl.textContent = 'Sesi inbox habis, membuat ulang...';
+        await createNewAccount();
+      }
+    }
+
+    function startPolling() {
+      if (pollTimer) clearInterval(pollTimer);
+      checkInbox();
+      pollTimer = setInterval(checkInbox, 5000);
+    }
+
+    copyEmailBtn.addEventListener('click', () => {
+      if (!currentAccount?.address) return;
+      navigator.clipboard.writeText(currentAccount.address);
+      showToast(`Email disalin: ${currentAccount.address}`);
+    });
+
+    newEmailBtn.addEventListener('click', createNewAccount);
+    refreshInboxBtn.addEventListener('click', checkInbox);
+
+    (function init() {
+      const saved = localStorage.getItem(STORAGE_KEY);
+      if (saved) {
+        try {
+          currentAccount = JSON.parse(saved);
+          if (currentAccount?.address && currentAccount?.token && currentAccount?.base) {
+            activeEmailEl.textContent = currentAccount.address;
+            apiStatusText.textContent = `Aktif • ${currentAccount.serverName || 'Inbox Siap'}`;
+            startPolling();
+            return;
+          }
+        } catch (e) {}
+      }
+      createNewAccount();
+    })();
+  </script>
+</body>
+</html>
