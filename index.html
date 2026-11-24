@@ -208,32 +208,98 @@
       margin-bottom: 20px;
     }
 
-    .domain-row {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
+    .custom-builder-grid {
+      display: grid;
+      grid-template-columns: 1fr auto;
       gap: 10px;
       margin-bottom: 12px;
-      flex-wrap: wrap;
+      align-items: end;
     }
 
-    .domain-label {
-      font-size: 0.8rem;
+    @media (max-width: 560px) {
+      .custom-builder-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .input-group-box {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .field-label {
+      font-size: 0.78rem;
       font-weight: 600;
       color: var(--text-muted);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .pattern-hint {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.72rem;
+      color: var(--primary-light);
+    }
+
+    .prefix-input-wrap {
+      display: flex;
+      align-items: center;
+      background-color: var(--bg-input);
+      border: 1px solid var(--border);
+      border-radius: 11px;
+      padding: 0 12px;
+      transition: border-color 0.2s ease;
+    }
+
+    .prefix-input-wrap:focus-within {
+      border-color: var(--primary);
+    }
+
+    .prefix-input {
+      flex: 1;
+      background: transparent;
+      border: none;
+      color: var(--text-main);
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.88rem;
+      font-weight: 600;
+      padding: 10px 0;
+      outline: none;
+      min-width: 0;
+    }
+
+    .prefix-input::placeholder {
+      color: rgba(148, 163, 184, 0.5);
+      font-weight: 400;
+    }
+
+    .suffix-preview-tag {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.8rem;
+      font-weight: 700;
+      color: var(--primary-light);
+      background: rgba(16, 185, 129, 0.14);
+      border: 1px solid rgba(16, 185, 129, 0.28);
+      padding: 3px 8px;
+      border-radius: 7px;
+      white-space: nowrap;
+      margin-left: 8px;
     }
 
     .domain-select {
       background-color: var(--bg-input);
       color: var(--text-main);
       border: 1px solid var(--border);
-      border-radius: 10px;
-      padding: 7px 12px;
+      border-radius: 11px;
+      padding: 10px 12px;
       font-family: 'JetBrains Mono', monospace;
-      font-size: 0.8rem;
+      font-size: 0.84rem;
       font-weight: 600;
       outline: none;
       cursor: pointer;
+      height: 42px;
     }
 
     .domain-select:focus {
@@ -784,21 +850,42 @@
     <header>
       <div class="creator-tag">Official OTP Tool by <span>TAKAAA</span></div>
       <h1>Virtual Email & <span class="gradient-text">Live OTP</span> Receiver</h1>
-      <p>Buat & reroll email aktif dalam 1 klik, simpan hingga 3 akun favoritmu, dan gunakan ulang kapan saja untuk menerima kode OTP baru.</p>
+      <p>Isi nama depan sesuka hati dengan format otomatis <strong>nama.tkXXXX@domain</strong>, simpan hingga 3 akun, dan terima kode OTP secara langsung.</p>
     </header>
 
-    <!-- Card Utama Generator & Reroll -->
+    <!-- Card Utama Generator & Custom Prefix -->
     <div class="card">
-      <div class="domain-row">
-        <span class="domain-label">Pilih Domain Aktif (100% Masuk OTP):</span>
-        <select id="domainSelect" class="domain-select">
-          <option value="sharklasers.com">@sharklasers.com</option>
-          <option value="grr.la">@grr.la</option>
-          <option value="guerrillamail.com">@guerrillamail.com</option>
-          <option value="pokemail.net">@pokemail.net</option>
-          <option value="spam4.me">@spam4.me</option>
-          <option value="guerrillamailblock.com">@guerrillamailblock.com</option>
-        </select>
+      <div class="custom-builder-grid">
+        <div class="input-group-box">
+          <label class="field-label" for="customPrefixInput">
+            <span>Nama Depan Sesuka Hati (Opsional)</span>
+            <span class="pattern-hint">Format: [nama].tk[acak]</span>
+          </label>
+          <div class="prefix-input-wrap">
+            <input
+              type="text"
+              id="customPrefixInput"
+              class="prefix-input"
+              placeholder="contoh: andhika (kosong = acak)"
+              maxlength="24"
+              autocomplete="off"
+              spellcheck="false"
+            />
+            <span class="suffix-preview-tag">.tkXXXX</span>
+          </div>
+        </div>
+
+        <div class="input-group-box">
+          <label class="field-label" for="domainSelect"><span>Domain Aktif</span></label>
+          <select id="domainSelect" class="domain-select">
+            <option value="sharklasers.com">@sharklasers.com</option>
+            <option value="grr.la">@grr.la</option>
+            <option value="guerrillamail.com">@guerrillamail.com</option>
+            <option value="pokemail.net">@pokemail.net</option>
+            <option value="spam4.me">@spam4.me</option>
+            <option value="guerrillamailblock.com">@guerrillamailblock.com</option>
+          </select>
+        </div>
       </div>
 
       <div class="email-display-box">
@@ -809,7 +896,7 @@
       <div class="error-detail" id="errorDetail"></div>
 
       <div class="btn-group">
-        <button type="button" class="btn-primary" id="rerollEmailBtn">🎲 Reroll Email Baru</button>
+        <button type="button" class="btn-primary" id="rerollEmailBtn">🎲 Buat / Reroll Email</button>
         <button type="button" class="btn-save" id="saveEmailBtn">💾 Simpan Email (0/3)</button>
         <button type="button" class="btn-secondary" id="refreshInboxBtn">🔄 Cek Inbox</button>
       </div>
@@ -883,8 +970,8 @@
   <div class="toast" id="toast">Berhasil disalin!</div>
 
   <script>
-    const ACTIVE_STORAGE_KEY = 'takaaa_active_email_v7';
-    const SAVED_STORAGE_KEY = 'takaaa_saved_emails_v7';
+    const ACTIVE_STORAGE_KEY = 'takaaa_active_email_v8';
+    const SAVED_STORAGE_KEY = 'takaaa_saved_emails_v8';
     const MAX_SAVED_EMAILS = 3;
 
     const PROVIDERS = [
@@ -894,6 +981,7 @@
       { id: 'mailtm_direct', name: 'Server 4 (Mail.tm)', type: 'hydra', base: 'https://api.mail.tm' }
     ];
 
+    const customPrefixInput = document.getElementById('customPrefixInput');
     const domainSelect = document.getElementById('domainSelect');
     const activeEmailEl = document.getElementById('activeEmail');
     const errorDetailEl = document.getElementById('errorDetail');
@@ -937,6 +1025,36 @@
       toast.textContent = msg;
       toast.classList.add('show');
       setTimeout(() => toast.classList.remove('show'), 2400);
+    }
+
+    function randomString(len) {
+      const chars = 'abcdefghijklmnopqrstuvwxyz0123456789';
+      let out = '';
+      for (let i = 0; i < len; i++) {
+        out += chars[Math.floor(Math.random() * chars.length)];
+      }
+      return out;
+    }
+
+    function randomAlpha(len) {
+      const letters = 'abcdefghijklmnopqrstuvwxyz';
+      let out = '';
+      for (let i = 0; i < len; i++) {
+        out += letters[Math.floor(Math.random() * letters.length)];
+      }
+      return out;
+    }
+
+    // Membangun username sesuai format: [nama_bebas].tk[4_karakter_acak]
+    function buildFormattedUsername() {
+      const rawPrefix = customPrefixInput.value
+        .trim()
+        .toLowerCase()
+        .replace(/[^a-z0-9_]/g, '');
+
+      const baseName = rawPrefix.length > 0 ? rawPrefix : `user${randomAlpha(3)}`;
+      const randomTag = `tk${randomString(4)}`;
+      return `${baseName}.${randomTag}`;
     }
 
     function loadSavedAccounts() {
@@ -1132,17 +1250,9 @@
       return targetUrl;
     }
 
-    function randomString(len) {
-      const chars = 'abcdefghijklmnopqrstuvwxyz0123456789';
-      let out = '';
-      for (let i = 0; i < len; i++) {
-        out += chars[Math.floor(Math.random() * chars.length)];
-      }
-      return out;
-    }
-
     async function createOnProvider(provider) {
       const selectedDomain = domainSelect.value || 'sharklasers.com';
+      const formattedUser = buildFormattedUsername();
 
       if (provider.type === 'guerrilla') {
         const url = wrapGuerrillaUrl('f=get_email_address&lang=en', provider.proxy);
@@ -1153,16 +1263,15 @@
           throw new Error(`${provider.name} data kosong`);
         }
 
-        const customUser = `takaaa.${randomString(6)}`;
         const setUrl = wrapGuerrillaUrl(
-          `f=set_email_user&email_user=${encodeURIComponent(customUser)}&lang=en&sid_token=${encodeURIComponent(data.sid_token)}`,
+          `f=set_email_user&email_user=${encodeURIComponent(formattedUser)}&lang=en&sid_token=${encodeURIComponent(data.sid_token)}`,
           provider.proxy
         );
         let baseAddr = data.email_addr;
         let finalToken = data.sid_token;
 
         try {
-          const setRes = await fetchWithTimeout(setUrl, {}, 5000);
+          const setRes = await fetchWithTimeout(setUrl, {}, 5500);
           if (setRes.ok) {
             const setData = await setRes.json();
             if (setData.email_addr) baseAddr = setData.email_addr;
@@ -1170,7 +1279,6 @@
           }
         } catch (e) {}
 
-        // Guerrilla Mail menerima pesan untuk username yang sama di semua domain aliasnya
         const usernamePart = baseAddr.split('@')[0];
         const finalAddr = `${usernamePart}@${selectedDomain}`;
 
@@ -1190,9 +1298,8 @@
       const activeDomain = domains.find((d) => d.isActive);
       if (!activeDomain) throw new Error(`${provider.name} domain kosong`);
 
-      const username = `takaaa.${randomString(6)}`;
-      const address = `${username}@${activeDomain.domain}`;
-      const password = `Takaaa#${randomString(10)}`;
+      const address = `${formattedUser}@${activeDomain.domain}`;
+      const password = `Tk#${randomString(10)}`;
 
       const accRes = await fetchWithTimeout(`${provider.base}/accounts`, {
         method: 'POST',
@@ -1222,8 +1329,8 @@
       rerollEmailBtn.disabled = true;
       errorDetailEl.style.display = 'none';
       statusBadge.classList.remove('error');
-      activeEmailEl.textContent = 'Meroll email baru...';
-      apiStatusText.textContent = 'Meroll Akun...';
+      activeEmailEl.textContent = 'Membuat email baru...';
+      apiStatusText.textContent = 'Memproses...';
       cachedBodies = {};
 
       let errors = [];
@@ -1237,7 +1344,7 @@
 
           activeEmailEl.textContent = account.address;
           apiStatusText.textContent = `Aktif • ${account.serverName}`;
-          showToast(`Reroll berhasil: ${account.address}`);
+          showToast(`Email aktif: ${account.address}`);
 
           renderSavedVault();
           renderEmptyInbox();
@@ -1256,12 +1363,27 @@
       errorDetailEl.style.display = 'block';
       errorDetailEl.innerHTML = `
         <strong>Log Koneksi:</strong> ${errors.join(' | ')}.<br>
-        Operator seluler Anda memblokir jalur API. Aktifkan <strong>DNS Pribadi (dns.google)</strong> di Pengaturan HP lalu tekan <strong>Reroll Email Baru</strong>.
+        Operator seluler Anda memblokir jalur API. Aktifkan <strong>DNS Pribadi (dns.google)</strong> di Pengaturan HP lalu tekan <strong>Buat / Reroll Email</strong>.
       `;
       rerollEmailBtn.disabled = false;
     }
 
-    // Jika user ganti domain dropdown pada akun Guerrilla aktif, langsung ganti domainnya tanpa mereset token
+    // Tekan Enter di input nama depan langsung membuat email baru
+    customPrefixInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        createNewAccount();
+      }
+    });
+
+    // Bersihkan karakter tidak valid saat mengetik
+    customPrefixInput.addEventListener('input', () => {
+      const cleaned = customPrefixInput.value.toLowerCase().replace(/[^a-z0-9_]/g, '');
+      if (customPrefixInput.value !== cleaned) {
+        customPrefixInput.value = cleaned;
+      }
+    });
+
     domainSelect.addEventListener('change', () => {
       if (!currentAccount || currentAccount.type !== 'guerrilla') return;
       const usernamePart = currentAccount.address.split('@')[0];
