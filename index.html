@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>Virtual Email & Live OTP Receiver — TAKAAA</title>
+  <title>Virtual Gmail & Live OTP Receiver — TAKAAA</title>
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -19,6 +19,7 @@
       --primary: #10b981;
       --primary-light: #34d399;
       --secondary: #3b82f6;
+      --warning: #f59e0b;
       --danger: #f87171;
       --text-main: #f8fafc;
       --text-muted: #94a3b8;
@@ -216,17 +217,45 @@
       border: 1px solid rgba(52, 211, 153, 0.35);
       border-radius: 14px;
       padding: 14px 16px;
-      margin-bottom: 12px;
+      margin-bottom: 10px;
+    }
+
+    .email-info-wrap {
+      overflow: hidden;
+      flex: 1;
     }
 
     .active-email-text {
+      display: block;
       font-family: 'JetBrains Mono', monospace;
-      font-size: 0.96rem;
-      font-weight: 600;
+      font-size: 0.98rem;
+      font-weight: 700;
       color: var(--primary-light);
       overflow: hidden;
       text-overflow: ellipsis;
       white-space: nowrap;
+    }
+
+    .alias-subtext {
+      display: block;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.72rem;
+      color: var(--text-muted);
+      margin-top: 2px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .notice-banner {
+      font-size: 0.78rem;
+      color: #fcd34d;
+      background: rgba(245, 158, 11, 0.1);
+      border: 1px solid rgba(245, 158, 11, 0.28);
+      border-radius: 10px;
+      padding: 9px 12px;
+      margin-bottom: 14px;
+      line-height: 1.45;
     }
 
     .error-detail {
@@ -247,17 +276,17 @@
     }
 
     button, .btn-link {
-      padding: 12px 18px;
+      padding: 12px 16px;
       border: none;
       border-radius: 12px;
       font-family: inherit;
-      font-size: 0.9rem;
+      font-size: 0.88rem;
       font-weight: 700;
       cursor: pointer;
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      gap: 8px;
+      gap: 7px;
       text-decoration: none;
       transition: all 0.2s ease;
     }
@@ -267,7 +296,7 @@
     }
 
     button:disabled {
-      opacity: 0.6;
+      opacity: 0.55;
       cursor: not-allowed;
     }
 
@@ -275,12 +304,29 @@
       background: linear-gradient(135deg, #10b981 0%, #059669 100%);
       color: #032615;
       flex: 1;
-      min-width: 180px;
+      min-width: 150px;
       box-shadow: 0 8px 22px rgba(16, 185, 129, 0.28);
     }
 
     .btn-primary:hover:not(:disabled) {
       background: linear-gradient(135deg, #34d399 0%, #10b981 100%);
+    }
+
+    .btn-save {
+      background: rgba(245, 158, 11, 0.16);
+      color: #fcd34d;
+      border: 1px solid rgba(245, 158, 11, 0.4);
+    }
+
+    .btn-save:hover:not(:disabled) {
+      background: #f59e0b;
+      color: #0f172a;
+    }
+
+    .btn-save.full-warning {
+      background: rgba(248, 113, 113, 0.16);
+      color: #fca5a5;
+      border-color: rgba(248, 113, 113, 0.4);
     }
 
     .btn-secondary {
@@ -301,6 +347,149 @@
       color: #032615;
       border-radius: 9px;
       flex-shrink: 0;
+    }
+
+    /* Saved Accounts Vault (Max 3) */
+    .vault-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+
+    .vault-title {
+      font-size: 0.95rem;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .vault-header-right {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .btn-clear-all {
+      padding: 5px 10px;
+      font-size: 0.74rem;
+      border-radius: 8px;
+      background: rgba(248, 113, 113, 0.14);
+      color: #fca5a5;
+      border: 1px solid rgba(248, 113, 113, 0.32);
+    }
+
+    .btn-clear-all:hover {
+      background: #ef4444;
+      color: #ffffff;
+    }
+
+    .vault-slots {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+      gap: 10px;
+    }
+
+    .slot-card {
+      background: rgba(30, 41, 59, 0.55);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 12px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      gap: 10px;
+      transition: all 0.2s ease;
+    }
+
+    .slot-card.active-slot {
+      border-color: var(--primary);
+      background: rgba(16, 185, 129, 0.1);
+      box-shadow: 0 0 0 1px rgba(16, 185, 129, 0.25);
+    }
+
+    .slot-card.empty-slot {
+      border-style: dashed;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      color: var(--text-muted);
+      font-size: 0.8rem;
+      min-height: 98px;
+    }
+
+    .slot-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.72rem;
+      color: var(--text-muted);
+    }
+
+    .slot-badge {
+      font-weight: 700;
+      color: var(--primary-light);
+    }
+
+    .slot-email {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: var(--text-main);
+      word-break: break-all;
+    }
+
+    .slot-actions {
+      display: flex;
+      gap: 6px;
+    }
+
+    .btn-slot {
+      padding: 7px 10px;
+      font-size: 0.74rem;
+      border-radius: 8px;
+      flex: 1;
+    }
+
+    .btn-slot-use {
+      background: rgba(16, 185, 129, 0.18);
+      color: var(--primary-light);
+      border: 1px solid rgba(16, 185, 129, 0.35);
+    }
+
+    .btn-slot-use:hover:not(:disabled) {
+      background: var(--primary);
+      color: #032615;
+    }
+
+    .btn-slot-del {
+      background: rgba(239, 68, 68, 0.16);
+      color: #fca5a5;
+      border: 1px solid rgba(239, 68, 68, 0.38);
+      flex: 0 0 auto;
+      padding: 7px 10px;
+    }
+
+    .btn-slot-del:hover {
+      background: #ef4444;
+      color: #ffffff;
+      border-color: #ef4444;
+    }
+
+    .btn-slot-del.confirming {
+      background: #ef4444;
+      color: #ffffff;
+      border-color: #ef4444;
+      animation: shake 0.25s ease-in-out;
+    }
+
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      25% { transform: translateX(-2px); }
+      75% { transform: translateX(2px); }
     }
 
     .inbox-header {
@@ -589,24 +778,50 @@
 
     <header>
       <div class="creator-tag">Official OTP Tool by <span>TAKAAA</span></div>
-      <h1>Virtual Email & <span class="gradient-text">Live OTP</span> Receiver</h1>
-      <p>Buat alamat email aktif dalam 1 klik, gunakan untuk mendaftar, dan terima kode OTP langsung di layar ini.</p>
+      <h1>Virtual Gmail & <span class="gradient-text">Live OTP</span> Receiver</h1>
+      <p>Reroll username @gmail.com sepuasnya, simpan hingga 3 akun favoritmu, dan gunakan ulang kapan saja untuk menerima kode OTP baru.</p>
     </header>
 
+    <!-- Card Utama Generator & Reroll -->
     <div class="card">
       <div class="email-display-box">
-        <span class="active-email-text" id="activeEmail">Menghubungkan ke server...</span>
-        <button type="button" class="btn-copy-main" id="copyEmailBtn">Salin Email</button>
+        <div class="email-info-wrap">
+          <span class="active-email-text" id="activeEmail">Menghubungkan ke server...</span>
+          <span class="alias-subtext" id="realRoutingText">Jalur Inbox: Menyiapkan...</span>
+        </div>
+        <button type="button" class="btn-copy-main" id="copyEmailBtn">Salin Gmail</button>
+      </div>
+
+      <div class="notice-banner">
+        <strong>Info Penerima OTP:</strong> Website publik tidak dapat mengakses server Google asli. Jika situs tujuan mengirim OTP ke domain publik, gunakan alamat <strong>Jalur Inbox</strong> di bawah nama Gmail agar pesan pasti masuk ke kotak masuk ini.
       </div>
 
       <div class="error-detail" id="errorDetail"></div>
 
       <div class="btn-group">
-        <button type="button" class="btn-primary" id="newEmailBtn">Buat Email Baru</button>
-        <button type="button" class="btn-secondary" id="refreshInboxBtn">Cek Inbox Sekarang</button>
+        <button type="button" class="btn-primary" id="rerollEmailBtn">🎲 Reroll Gmail Baru</button>
+        <button type="button" class="btn-save" id="saveEmailBtn">💾 Simpan Gmail (0/3)</button>
+        <button type="button" class="btn-secondary" id="refreshInboxBtn">🔄 Cek Inbox</button>
       </div>
     </div>
 
+    <!-- Card Penyimpanan Maksimal 3 Gmail -->
+    <div class="card">
+      <div class="vault-header">
+        <div class="vault-title">
+          <span>📌 Gmail Tersimpan</span>
+          <span class="badge-count" id="savedCountBadge">0 / 3 Slot</span>
+        </div>
+        <div class="vault-header-right">
+          <span class="timer-text" id="vaultHintText">Hapus slot lama untuk menyimpan Gmail baru</span>
+          <button type="button" class="btn-clear-all" id="clearAllSavedBtn" style="display: none;">🗑️ Hapus Semua</button>
+        </div>
+      </div>
+
+      <div class="vault-slots" id="savedSlotsContainer"></div>
+    </div>
+
+    <!-- Card Kotak Masuk -->
     <div class="card">
       <div class="inbox-header">
         <div>
@@ -658,9 +873,10 @@
   <div class="toast" id="toast">Berhasil disalin!</div>
 
   <script>
-    const STORAGE_KEY = 'takaaa_mobile_inbox_v5';
+    const ACTIVE_STORAGE_KEY = 'takaaa_active_gmail_v6';
+    const SAVED_STORAGE_KEY = 'takaaa_saved_gmails_v6';
+    const MAX_SAVED_GMAILS = 3;
 
-    // Jalur Guerrilla Mail (100% GET request) + Multi-Proxy anti-blokir ISP seluler
     const PROVIDERS = [
       { id: 'gm_direct', name: 'Server 1 (Direct)', type: 'guerrilla', proxy: 'direct' },
       { id: 'gm_allorigins', name: 'Server 2 (Proxy A)', type: 'guerrilla', proxy: 'allorigins' },
@@ -669,10 +885,15 @@
     ];
 
     const activeEmailEl = document.getElementById('activeEmail');
+    const realRoutingTextEl = document.getElementById('realRoutingText');
     const errorDetailEl = document.getElementById('errorDetail');
     const copyEmailBtn = document.getElementById('copyEmailBtn');
-    const newEmailBtn = document.getElementById('newEmailBtn');
+    const rerollEmailBtn = document.getElementById('rerollEmailBtn');
+    const saveEmailBtn = document.getElementById('saveEmailBtn');
     const refreshInboxBtn = document.getElementById('refreshInboxBtn');
+    const savedSlotsContainer = document.getElementById('savedSlotsContainer');
+    const savedCountBadge = document.getElementById('savedCountBadge');
+    const clearAllSavedBtn = document.getElementById('clearAllSavedBtn');
     const messageListEl = document.getElementById('messageList');
     const msgCountEl = document.getElementById('msgCount');
     const pollStatusEl = document.getElementById('pollStatus');
@@ -696,22 +917,201 @@
     });
 
     let currentAccount = null;
+    let savedAccounts = [];
     let cachedBodies = {};
     let pollTimer = null;
+    let pendingDeleteAddress = null;
+    let pendingDeleteTimer = null;
 
     function showToast(msg) {
       toast.textContent = msg;
       toast.classList.add('show');
-      setTimeout(() => toast.classList.remove('show'), 2200);
+      setTimeout(() => toast.classList.remove('show'), 2400);
     }
 
-    // Fetch dengan batas waktu 6 detik agar tidak menggantung jika diblokir operator seluler
+    function loadSavedAccounts() {
+      try {
+        const raw = localStorage.getItem(SAVED_STORAGE_KEY);
+        const parsed = raw ? JSON.parse(raw) : [];
+        savedAccounts = Array.isArray(parsed) ? parsed.slice(0, MAX_SAVED_GMAILS) : [];
+      } catch (e) {
+        savedAccounts = [];
+      }
+    }
+
+    function persistSavedAccounts() {
+      localStorage.setItem(SAVED_STORAGE_KEY, JSON.stringify(savedAccounts));
+      renderSavedVault();
+    }
+
+    function generateGmailDisplay(realAddress) {
+      const localPart = (realAddress.split('@')[0] || `takaaa${randomString(5)}`).replace(/[^a-zA-Z0-9._]/g, '');
+      return `${localPart}@gmail.com`;
+    }
+
+    function renderSavedVault() {
+      savedCountBadge.textContent = `${savedAccounts.length} / ${MAX_SAVED_GMAILS} Slot`;
+      clearAllSavedBtn.style.display = savedAccounts.length > 0 ? 'inline-flex' : 'none';
+
+      const isAlreadySaved = currentAccount && savedAccounts.some(acc => acc.address === currentAccount.address);
+      const isFull = savedAccounts.length >= MAX_SAVED_GMAILS;
+
+      saveEmailBtn.classList.remove('full-warning');
+      if (isAlreadySaved) {
+        saveEmailBtn.textContent = '✅ Sudah Tersimpan';
+      } else if (isFull) {
+        saveEmailBtn.textContent = `⚠️ Slot Penuh (${MAX_SAVED_GMAILS}/${MAX_SAVED_GMAILS})`;
+        saveEmailBtn.classList.add('full-warning');
+      } else {
+        saveEmailBtn.textContent = `💾 Simpan Gmail (${savedAccounts.length}/${MAX_SAVED_GMAILS})`;
+      }
+
+      savedSlotsContainer.innerHTML = '';
+
+      for (let i = 0; i < MAX_SAVED_GMAILS; i++) {
+        const acc = savedAccounts[i];
+        if (!acc) {
+          const emptyCard = document.createElement('div');
+          emptyCard.className = 'slot-card empty-slot';
+          emptyCard.innerHTML = `<span>Slot #${i + 1} Kosong</span><small>Siap diisi Gmail baru</small>`;
+          savedSlotsContainer.appendChild(emptyCard);
+          continue;
+        }
+
+        const isCurrent = currentAccount && currentAccount.address === acc.address;
+        const isConfirming = pendingDeleteAddress === acc.address;
+
+        const card = document.createElement('div');
+        card.className = `slot-card ${isCurrent ? 'active-slot' : ''}`;
+
+        const top = document.createElement('div');
+        top.className = 'slot-top';
+        top.innerHTML = `
+          <span class="slot-badge">Slot #${i + 1} ${isCurrent ? '• AKTIF' : ''}</span>
+          <span>${acc.savedAt || 'Tersimpan'}</span>
+        `;
+
+        const emailText = document.createElement('div');
+        emailText.className = 'slot-email';
+        emailText.textContent = acc.gmailDisplay;
+
+        const actions = document.createElement('div');
+        actions.className = 'slot-actions';
+
+        const useBtn = document.createElement('button');
+        useBtn.type = 'button';
+        useBtn.className = 'btn-slot btn-slot-use';
+        useBtn.textContent = isCurrent ? 'Dibuka' : 'Gunakan';
+        useBtn.disabled = isCurrent;
+        useBtn.addEventListener('click', () => switchToAccount(acc));
+
+        const copySlotBtn = document.createElement('button');
+        copySlotBtn.type = 'button';
+        copySlotBtn.className = 'btn-slot btn-outline';
+        copySlotBtn.textContent = 'Salin';
+        copySlotBtn.addEventListener('click', () => {
+          navigator.clipboard.writeText(acc.gmailDisplay);
+          showToast(`Disalin: ${acc.gmailDisplay}`);
+        });
+
+        const delBtn = document.createElement('button');
+        delBtn.type = 'button';
+        delBtn.className = `btn-slot btn-slot-del ${isConfirming ? 'confirming' : ''}`;
+        delBtn.textContent = isConfirming ? 'Yakin Hapus?' : '🗑️ Hapus';
+        delBtn.title = 'Hapus Gmail ini untuk mengosongkan slot';
+        delBtn.addEventListener('click', () => handleDeleteClick(acc));
+
+        actions.append(useBtn, copySlotBtn, delBtn);
+        card.append(top, emailText, actions);
+        savedSlotsContainer.appendChild(card);
+      }
+    }
+
+    function handleDeleteClick(account) {
+      if (pendingDeleteAddress === account.address) {
+        clearTimeout(pendingDeleteTimer);
+        pendingDeleteAddress = null;
+        deleteSavedAccount(account);
+        return;
+      }
+
+      pendingDeleteAddress = account.address;
+      renderSavedVault();
+      showToast(`Klik "Yakin Hapus?" sekali lagi untuk menghapus ${account.gmailDisplay}`);
+
+      clearTimeout(pendingDeleteTimer);
+      pendingDeleteTimer = setTimeout(() => {
+        pendingDeleteAddress = null;
+        renderSavedVault();
+      }, 3500);
+    }
+
+    function deleteSavedAccount(account) {
+      savedAccounts = savedAccounts.filter(acc => acc.address !== account.address);
+      persistSavedAccounts();
+      showToast(`Slot dikosongkan! ${account.gmailDisplay} dihapus.`);
+    }
+
+    function clearAllSavedAccounts() {
+      if (savedAccounts.length === 0) return;
+      pendingDeleteAddress = null;
+      clearTimeout(pendingDeleteTimer);
+      savedAccounts = [];
+      persistSavedAccounts();
+      showToast('Semua slot Gmail tersimpan berhasil dihapus!');
+    }
+
+    function saveCurrentAccount() {
+      if (!currentAccount || !currentAccount.token) {
+        showToast('Tunggu email aktif terlebih dahulu!');
+        return;
+      }
+
+      if (savedAccounts.some(acc => acc.address === currentAccount.address)) {
+        showToast('Gmail ini sudah tersimpan di daftar!');
+        return;
+      }
+
+      if (savedAccounts.length >= MAX_SAVED_GMAILS) {
+        showToast('Slot penuh (3/3)! Klik tombol "Hapus" pada salah satu slot dulu.');
+        savedSlotsContainer.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        return;
+      }
+
+      const now = new Date();
+      const savedTime = now.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
+
+      savedAccounts.push({
+        ...currentAccount,
+        savedAt: savedTime
+      });
+
+      persistSavedAccounts();
+      showToast(`Tersimpan di Slot #${savedAccounts.length}!`);
+    }
+
+    function switchToAccount(account) {
+      currentAccount = { ...account };
+      cachedBodies = {};
+      localStorage.setItem(ACTIVE_STORAGE_KEY, JSON.stringify(currentAccount));
+
+      activeEmailEl.textContent = currentAccount.gmailDisplay;
+      realRoutingTextEl.textContent = `Jalur Inbox Aktif: ${currentAccount.address}`;
+      apiStatusText.textContent = `Aktif • ${currentAccount.serverName || 'Saved Inbox'}`;
+      statusBadge.classList.remove('error');
+      errorDetailEl.style.display = 'none';
+
+      renderSavedVault();
+      renderEmptyInbox();
+      startPolling();
+      showToast(`Membuka inbox ${currentAccount.gmailDisplay}`);
+    }
+
     async function fetchWithTimeout(url, options = {}, timeoutMs = 6000) {
       const controller = new AbortController();
       const timer = setTimeout(() => controller.abort(), timeoutMs);
       try {
-        const res = await fetch(url, { ...options, signal: controller.signal });
-        return res;
+        return await fetch(url, { ...options, signal: controller.signal });
       } finally {
         clearTimeout(timer);
       }
@@ -746,16 +1146,34 @@
         if (!data.email_addr || !data.sid_token) {
           throw new Error(`${provider.name} data kosong`);
         }
+
+        const customUser = `takaaa.${randomString(6)}`;
+        const setUrl = wrapGuerrillaUrl(
+          `f=set_email_user&email_user=${encodeURIComponent(customUser)}&lang=en&sid_token=${encodeURIComponent(data.sid_token)}`,
+          provider.proxy
+        );
+        let finalAddr = data.email_addr;
+        let finalToken = data.sid_token;
+
+        try {
+          const setRes = await fetchWithTimeout(setUrl, {}, 5000);
+          if (setRes.ok) {
+            const setData = await setRes.json();
+            if (setData.email_addr) finalAddr = setData.email_addr;
+            if (setData.sid_token) finalToken = setData.sid_token;
+          }
+        } catch (e) {}
+
         return {
           type: 'guerrilla',
           proxy: provider.proxy,
           serverName: provider.name,
-          address: data.email_addr,
-          token: data.sid_token
+          address: finalAddr,
+          gmailDisplay: generateGmailDisplay(finalAddr),
+          token: finalToken
         };
       }
 
-      // Cadangan Mail.tm
       const domainRes = await fetchWithTimeout(`${provider.base}/domains`, { cache: 'no-store' }, 5000);
       if (!domainRes.ok) throw new Error(`${provider.name} HTTP ${domainRes.status}`);
       const domainData = await domainRes.json();
@@ -763,7 +1181,8 @@
       const activeDomain = domains.find((d) => d.isActive);
       if (!activeDomain) throw new Error(`${provider.name} domain kosong`);
 
-      const address = `takaaa.${randomString(6)}@${activeDomain.domain}`;
+      const username = `takaaa.${randomString(6)}`;
+      const address = `${username}@${activeDomain.domain}`;
       const password = `Takaaa#${randomString(10)}`;
 
       const accRes = await fetchWithTimeout(`${provider.base}/accounts`, {
@@ -786,35 +1205,38 @@
         base: provider.base,
         serverName: provider.name,
         address,
+        gmailDisplay: `${username}@gmail.com`,
         token: tokenData.token
       };
     }
 
     async function createNewAccount() {
-      newEmailBtn.disabled = true;
+      rerollEmailBtn.disabled = true;
       errorDetailEl.style.display = 'none';
       statusBadge.classList.remove('error');
-      activeEmailEl.textContent = 'Menghubungkan ke server...';
-      apiStatusText.textContent = 'Menghubungkan...';
+      activeEmailEl.textContent = 'Meroll @gmail.com baru...';
+      realRoutingTextEl.textContent = 'Menghubungkan jalur inbox...';
+      apiStatusText.textContent = 'Meroll Akun...';
       cachedBodies = {};
 
       let errors = [];
 
       for (const provider of PROVIDERS) {
         try {
-          activeEmailEl.textContent = `Mencoba ${provider.name}...`;
           const account = await createOnProvider(provider);
 
           currentAccount = account;
-          localStorage.setItem(STORAGE_KEY, JSON.stringify(currentAccount));
+          localStorage.setItem(ACTIVE_STORAGE_KEY, JSON.stringify(currentAccount));
 
-          activeEmailEl.textContent = account.address;
+          activeEmailEl.textContent = account.gmailDisplay;
+          realRoutingTextEl.textContent = `Jalur Inbox Aktif: ${account.address}`;
           apiStatusText.textContent = `Aktif • ${account.serverName}`;
-          showToast('Email aktif siap digunakan!');
+          showToast(`Reroll berhasil: ${account.gmailDisplay}`);
 
+          renderSavedVault();
           renderEmptyInbox();
           startPolling();
-          newEmailBtn.disabled = false;
+          rerollEmailBtn.disabled = false;
           return;
         } catch (err) {
           const reason = err.name === 'AbortError' ? `${provider.name} Timeout` : err.message;
@@ -824,13 +1246,14 @@
 
       statusBadge.classList.add('error');
       activeEmailEl.textContent = 'Gagal terhubung ke server';
+      realRoutingTextEl.textContent = 'Jalur Inbox terputus';
       apiStatusText.textContent = 'Gagal Terhubung';
       errorDetailEl.style.display = 'block';
       errorDetailEl.innerHTML = `
         <strong>Log Koneksi:</strong> ${errors.join(' | ')}.<br>
-        Operator seluler Anda memblokir seluruh jalur API. Aktifkan <strong>DNS Pribadi (dns.google)</strong> di Pengaturan HP lalu tekan <strong>Buat Email Baru</strong>.
+        Operator seluler Anda memblokir jalur API. Aktifkan <strong>DNS Pribadi (dns.google)</strong> di Pengaturan HP lalu tekan <strong>Reroll Gmail Baru</strong>.
       `;
-      newEmailBtn.disabled = false;
+      rerollEmailBtn.disabled = false;
     }
 
     function stripHtml(html) {
@@ -851,7 +1274,7 @@
       msgCountEl.textContent = '0 Pesan';
       messageListEl.innerHTML = `
         <div class="empty-inbox">
-          Belum ada pesan masuk. Salin alamat email di atas untuk mendaftar di website tujuan, lalu tunggu beberapa detik hingga kode OTP muncul di sini.
+          Belum ada pesan masuk untuk <strong>${currentAccount?.gmailDisplay || 'akun ini'}</strong>. Tunggu beberapa detik hingga kode OTP muncul di sini.
         </div>
       `;
     }
@@ -894,7 +1317,6 @@
         return normalized;
       }
 
-      // Tipe Hydra (Mail.tm)
       const res = await fetchWithTimeout(`${currentAccount.base}/messages`, {
         headers: { Authorization: `Bearer ${currentAccount.token}` },
         cache: 'no-store'
@@ -1007,22 +1429,32 @@
     }
 
     copyEmailBtn.addEventListener('click', () => {
-      if (!currentAccount?.address) return;
-      navigator.clipboard.writeText(currentAccount.address);
-      showToast(`Email disalin: ${currentAccount.address}`);
+      if (!currentAccount?.gmailDisplay) return;
+      navigator.clipboard.writeText(currentAccount.gmailDisplay);
+      showToast(`Disalin: ${currentAccount.gmailDisplay}`);
     });
 
-    newEmailBtn.addEventListener('click', createNewAccount);
+    rerollEmailBtn.addEventListener('click', createNewAccount);
+    saveEmailBtn.addEventListener('click', saveCurrentAccount);
     refreshInboxBtn.addEventListener('click', checkInbox);
+    clearAllSavedBtn.addEventListener('click', clearAllSavedAccounts);
 
     (function init() {
-      const saved = localStorage.getItem(STORAGE_KEY);
-      if (saved) {
+      loadSavedAccounts();
+      renderSavedVault();
+
+      const savedActive = localStorage.getItem(ACTIVE_STORAGE_KEY);
+      if (savedActive) {
         try {
-          currentAccount = JSON.parse(saved);
+          currentAccount = JSON.parse(savedActive);
           if (currentAccount?.address && currentAccount?.token) {
-            activeEmailEl.textContent = currentAccount.address;
+            if (!currentAccount.gmailDisplay) {
+              currentAccount.gmailDisplay = generateGmailDisplay(currentAccount.address);
+            }
+            activeEmailEl.textContent = currentAccount.gmailDisplay;
+            realRoutingTextEl.textContent = `Jalur Inbox Aktif: ${currentAccount.address}`;
             apiStatusText.textContent = `Aktif • ${currentAccount.serverName || 'Inbox Siap'}`;
+            renderSavedVault();
             startPolling();
             return;
           }
